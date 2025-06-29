@@ -95,7 +95,7 @@
             setTimeout(() => {
                 window.location.reload(); // обновляем страницу
             }, 5000);
-        }, 100);
+        }, 5000);
     });
 
     btn.addEventListener("keydown", function (e) {
