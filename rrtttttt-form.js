@@ -116,6 +116,19 @@
         }, 500)
     })
 };
+function waitForFormSuccess(form, callback) {
+    const observer = new MutationObserver(() => {
+        if (form.classList.contains('t-form__success')) {
+            observer.disconnect();
+            callback();
+        }
+    });
+
+    observer.observe(form, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
     t.tkForm = {
         init: o,
         handleSubmitKeyDown: function t(e) {
