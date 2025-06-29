@@ -68,35 +68,43 @@
     btn.classList.add("t-submit");
 
     btn.addEventListener("click", function handleClick(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
+    evt.preventDefault();
+    evt.stopPropagation();
 
-        window.tildaForm.hideErrors(form);
-        let errors = window.tildaForm.validate(form);
+    window.tildaForm.hideErrors(form);
+    let errors = window.tildaForm.validate(form);
 
-        if (errors.length) {
-            window.tildaForm.showErrors(form, errors);
-            return;
-        }
+    if (errors.length) {
+        window.tildaForm.showErrors(form, errors);
+        return;
+    }
 
-        if (!t_forms__initBtnClick) {
-            console.error("[TKFORM] Функция t_forms__initBtnClick не инициализирована на странице");
-            return;
-        }
+    if (!t_forms__initBtnClick) {
+        console.error("[TKFORM] Функция t_forms__initBtnClick не инициализирована на странице");
+        return;
+    }
 
-        // Отправляем форму стандартным способом Tilda
-        t_forms__initBtnClick(evt);
+    // Отправляем форму стандартным способом Tilda
+    t_forms__initBtnClick(evt);
 
-        // Показываем success-popup и обновляем страницу через 2 секунды
-        setTimeout(() => {
+    // Ждём успешной отправки формы
+    document.addEventListener('t-form-submitted-successfully', (e) => {
+        if (e.detail.formId === form.id) {
+            console.log('Форма успешно отправлена!');
             if (typeof t396_onSuccess === 'function') {
-                t396_onSuccess(); // показываем стандартный popup "Спасибо"
+                t396_onSuccess(); // показываем popup "Спасибо"
             }
             setTimeout(() => {
                 window.location.reload(); // обновляем страницу
-            }, 5000);
-        }, 5000);
+            }, 500);
+        }
     });
+
+    // Дополнительное наблюдение за классом .t-form__success
+    waitForFormSuccess(form, () => {
+        console.log('Форма получила класс .t-form__success');
+    });
+});
 
     btn.addEventListener("keydown", function (e) {
         tkForm.handleSubmitKeyDown(e);
