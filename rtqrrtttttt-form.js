@@ -185,28 +185,35 @@
             })
         };
 
-    function waitForFormSuccess(form, callback) {
-        console.log(`[TKFORM] Начинаем отслеживание .t-form__success для формы #${form.id}`);
+    function waitForFormPopup() {
+    const body = document.body;
 
-        const observer = new MutationObserver(() => {
-            if (form.classList.contains('t-form__success')) {
-                console.log(`[TKFORM] Форма #${form.id} получила класс .t-form__success`);
-                observer.disconnect();
-                callback();
+    const observer = new MutationObserver(() => {
+        if (body.classList.contains('t-body_success-popup-shown')) {
+            observer.disconnect();
+            console.log('[TKFORM] Попап успеха показан');
+            // Действия после успешной отправки
+            if (typeof t396_onSuccess === 'function') {
+                t396_onSuccess(); // показываем popup "Спасибо"
             }
-        });
+            setTimeout(() => {
+                window.location.reload(); // обновляем страницу
+            }, 500);
+        }
+    });
 
-        observer.observe(form, {
-            attributes: true,
-            attributeFilter: ['class']
-        });
+    observer.observe(body, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
 
         // Fallback: если успех не пришёл через 5 секунд
         setTimeout(() => {
             if (!form.classList.contains('t-form__success')) {
-                console.warn(`[TKFORM] Форма #${form.id} не получила .t-form__success за 15 секунд`);
+                console.warn(`[TKFORM] Форма #${form.id} не получила .t-form__success за 10 секунд`);
             }
-        }, 15000);
+        }, 10000);
     }
 
     t.tkForm = {
