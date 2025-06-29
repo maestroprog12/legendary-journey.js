@@ -204,9 +204,9 @@
         // Fallback: если успех не пришёл через 5 секунд
         setTimeout(() => {
             if (!form.classList.contains('t-form__success')) {
-                console.warn(`[TKFORM] Форма #${form.id} не получила .t-form__success за 5 секунд`);
+                console.warn(`[TKFORM] Форма #${form.id} не получила .t-form__success за 15 секунд`);
             }
-        }, 5000);
+        }, 15000);
     }
 
     t.tkForm = {
