@@ -78,7 +78,6 @@
                 let errors = window.tildaForm.validate(form);
 
                 if (errors.length) {
-                    console.error('[TKFORM] Ошибки валидации:', errors);
                     window.tildaForm.showErrors(form, errors);
                     return;
                 }
@@ -91,22 +90,8 @@
                 // Отправляем форму стандартным способом Tilda
                 t_forms__initBtnClick(evt);
 
-                // Ждём успешную отправку через события Tilda
-                document.addEventListener('t-form-submitted-successfully', (e) => {
-                    if (e.detail.formId === form.id) {
-                        console.log('Форма успешно отправлена!');
-                        if (typeof t396_onSuccess === 'function') {
-                            console.log('[TKFORM] Вызов t396_onSuccess');
-                            t396_onSuccess(); // показываем popup "Спасибо"
-                        }
-                        setTimeout(() => {
-                            window.location.reload(); // обновляем страницу
-                        }, 5000);
-                    }
-                });
-
-                // Начинаем отслеживание попапа
-                waitForSuccessPopupAndReload();
+                // Ждём прохождения капчи
+                waitForCaptchaAndReload(form);
             });
 
             btn.addEventListener("keydown", function (e) {
@@ -120,51 +105,45 @@
             })
         };
 
-    // === Основная функция: ждём попап "Спасибо" и обновляем через 5 секунд ===
-    function waitForSuccessPopupAndReload() {
-        const body = document.body;
+    // === Основная функция: ждём прохождения капчи и обновляем через 5 секунд ===
+    function waitForCaptchaAndReload(form) {
+        const captchaContainer = form.querySelector('.t-upwidget');
 
-        // Проверяем сразу — вдруг попап уже показан
-        const successPopupAlreadyShown = document.querySelector('.t-form-success-popup_window');
-        if (successPopupAlreadyShown) {
-            console.log('[TKFORM] Попап уже показан → запускаем обновление через 5 секунд');
-
-            setTimeout(() => {
-                console.log('[TKFORM] Убираем попап перед обновлением');
-                const wrapper = document.querySelector('.t-form-success-popup_wrapper');
-                if (wrapper) wrapper.remove(); // убираем попап
-                console.log('[TKFORM] Обновляем страницу...');
-                window.location.reload();
-            }, 5000);
-
+        if (!captchaContainer) {
+            console.warn('[TKFORM] Контейнер капчи не найден');
             return;
         }
 
-        console.log('[TKFORM] Ждём появления .t-form-success-popup_window');
+        console.log('[TKFORM] Ждём прохождения капчи...');
 
         const observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
-                if (mutation.type === 'childList') {
-                    const popup = document.querySelector('.t-form-success-popup_window');
-                    if (popup) {
-                        observer.disconnect();
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    if (captchaContainer.classList.contains('t-upwidget__success')) {
+                        observer.disconnect(); // перестаём наблюдать
+                        console.log('[TKFORM] Капча успешно пройдена');
 
-                        console.log('[TKFORM] Попап найден → запускаем таймер на 5 секунд');
+                        // Показываем попап успеха
+                        if (typeof t396_onSuccess === 'function') {
+                            console.log('[TKFORM] Вызов t396_onSuccess');
+                            t396_onSuccess(); // показываем popup "Спасибо"
+                        }
 
+                        console.log('[TKFORM] Через 5 секунд произойдёт обновление');
                         setTimeout(() => {
                             console.log('[TKFORM] Скрываем попап и обновляем страницу...');
-                            const wrapper = document.querySelector('.t-form-success-popup_wrapper');
-                            if (wrapper) wrapper.remove(); // убираем попап
-                            window.location.reload();
+                            const successPopupWrapper = document.querySelector('.t-form-success-popup_wrapper');
+                            if (successPopupWrapper) successPopupWrapper.remove(); // явно убираем попап
+                            window.location.reload(); // обновляем страницу
                         }, 5000);
                     }
                 }
             }
         });
 
-        observer.observe(body, {
-            childList: true,
-            subtree: true
+        observer.observe(captchaContainer, {
+            attributes: true,
+            attributeFilter: ['class']
         });
     }
 
