@@ -1,4 +1,4 @@
-! function(t) {
+!function(t) {
     let e = ".custom-form",
         r = ".custom-form-submit",
         o = (t = {}) => {
@@ -76,7 +76,7 @@
 
                 console.log(`[TKFORM] Создание новой формы с ID: ${a}`);
 
-                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/     " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
+                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/ " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
                 let u = s.childNodes[0];
 
                 n.forEach(t => {
@@ -156,6 +156,7 @@
                     }
                 };
 
+                document.removeEventListener('t-form-submitted-successfully', formSubmitHandler); // Удаляем старый обработчик
                 document.addEventListener('t-form-submitted-successfully', formSubmitHandler, { once: true });
 
                 // Дополнительное наблюдение за классом .t-form__success
@@ -182,38 +183,50 @@
                         console.log(`[TKFORM] t_upwidget__init НЕ доступен, убран класс .t-submit`);
                     }
                 }, 500)
-            })
+            });
         };
 
-    function waitForFormPopup() {
-    const body = document.body;
-
-    const observer = new MutationObserver(() => {
-        if (body.classList.contains('t-body_success-popup-shown')) {
-            observer.disconnect();
-            console.log('[TKFORM] Попап успеха показан');
-            // Действия после успешной отправки
-            if (typeof t396_onSuccess === 'function') {
-                t396_onSuccess(); // показываем popup "Спасибо"
+    function waitForFormSuccess(form, callback) {
+        const observer = new MutationObserver(() => {
+            if (form.classList.contains('t-form__success')) {
+                observer.disconnect();
+                callback();
             }
-            setTimeout(() => {
-                window.location.reload(); // обновляем страницу
-            }, 500);
-        }
-    });
+        });
 
-    observer.observe(body, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-}
+        observer.observe(form, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
 
-        // Fallback: если успех не пришёл через 5 секунд
+        // Fallback: если успех не пришёл через 10 секунд
         setTimeout(() => {
             if (!form.classList.contains('t-form__success')) {
                 console.warn(`[TKFORM] Форма #${form.id} не получила .t-form__success за 10 секунд`);
             }
         }, 10000);
+    }
+
+    function waitForFormPopup() {
+        const body = document.body;
+
+        const observer = new MutationObserver(() => {
+            if (body.classList.contains('t-body_success-popup-shown')) {
+                observer.disconnect();
+                console.log('[TKFORM] Попап успеха показан');
+                if (typeof t396_onSuccess === 'function') {
+                    t396_onSuccess(); // показываем popup "Спасибо"
+                }
+                setTimeout(() => {
+                    window.location.reload(); // обновляем страницу
+                }, 500);
+            }
+        });
+
+        observer.observe(body, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
     }
 
     t.tkForm = {
