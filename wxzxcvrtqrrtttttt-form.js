@@ -78,6 +78,7 @@
                 let errors = window.tildaForm.validate(form);
 
                 if (errors.length) {
+                    console.error('[TKFORM] Ошибки валидации:', errors);
                     window.tildaForm.showErrors(form, errors);
                     return;
                 }
@@ -89,6 +90,20 @@
 
                 // Отправляем форму стандартным способом Tilda
                 t_forms__initBtnClick(evt);
+
+                // Ждём успешную отправку через события Tilda
+                document.addEventListener('t-form-submitted-successfully', (e) => {
+                    if (e.detail.formId === form.id) {
+                        console.log('Форма успешно отправлена!');
+                        if (typeof t396_onSuccess === 'function') {
+                            console.log('[TKFORM] Вызов t396_onSuccess');
+                            t396_onSuccess(); // показываем popup "Спасибо"
+                        }
+                        setTimeout(() => {
+                            window.location.reload(); // обновляем страницу
+                        }, 5000);
+                    }
+                });
 
                 // Начинаем отслеживание попапа
                 waitForSuccessPopupAndReload();
