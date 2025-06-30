@@ -49,7 +49,7 @@
                 if (!i) return console.error(`[TKFORM] Не найдено кнопки submit с классом ${r} в блоке`, t), !1;
                 let a = o.dataset.artboardRecid ? "tk-form" + o.dataset.artboardRecid : "tk-form" + Math.floor(1e5 + 9e5 * Math.random()),
                     s = document.createElement("div");
-                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/     " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
+                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/        " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
                 let u = s.childNodes[0];
                 n.forEach(t => {
                     let e = t.querySelector("form");
@@ -105,46 +105,42 @@
             })
         };
 
-    // === Основная функция: ждём .t-body_success-popup-shown и обновляем страницу ===
+    // === Основная функция: ждём попап "Спасибо" и обновляем через 5 секунд ===
     function waitForSuccessPopupAndReload() {
         const body = document.body;
 
-        console.log('[TKFORM] Начинаем отслеживание .t-body_success-popup-shown');
-
         // Проверяем сразу — вдруг попап уже показан
-        if (body.classList.contains('t-body_success-popup-shown')) {
-            console.log('[TKFORM] Попап уже показан → обновляем через 5 секунд');
+        const successPopupAlreadyShown = document.querySelector('.t-form-success-popup_window');
+        if (successPopupAlreadyShown) {
+            console.log('[TKFORM] Попап уже показан → запускаем обновление через 5 секунд');
+
             setTimeout(() => {
-                console.log('[TKFORM] Убираем класс .t-body_success-popup-shown');
-                body.classList.remove('t-body_success-popup-shown');
+                console.log('[TKFORM] Убираем попап перед обновлением');
+                const wrapper = document.querySelector('.t-form-success-popup_wrapper');
+                if (wrapper) wrapper.remove(); // убираем попап
                 console.log('[TKFORM] Обновляем страницу...');
                 window.location.reload();
             }, 5000);
+
             return;
         }
 
-        console.log('[TKFORM] Ждём появления .t-body_success-popup-shown');
+        console.log('[TKFORM] Ждём появления .t-form-success-popup_window');
 
         const observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    if (body.classList.contains('t-body_success-popup-shown')) {
-                        observer.disconnect(); // перестаём наблюдать
-                        console.log('[TKFORM] Попап успешно показан');
+                if (mutation.type === 'childList') {
+                    const popup = document.querySelector('.t-form-success-popup_window');
+                    if (popup) {
+                        observer.disconnect();
 
-                        if (typeof t396_onSuccess === 'function') {
-                            console.log('[TKFORM] Вызов t396_onSuccess');
-                            t396_onSuccess(); // показываем popup "Спасибо"
-                        } else {
-                            console.warn('[TKFORM] t396_onSuccess не определена');
-                        }
+                        console.log('[TKFORM] Попап найден → запускаем таймер на 5 секунд');
 
-                        console.log('[TKFORM] Через 5 секунд произойдёт обновление');
                         setTimeout(() => {
-                            console.log('[TKFORM] Убираем класс .t-body_success-popup-shown');
-                            body.classList.remove('t-body_success-popup-shown'); // явно убираем класс
-                            console.log('[TKFORM] Обновляем страницу...');
-                            window.location.reload(); // обновляем страницу
+                            console.log('[TKFORM] Скрываем попап и обновляем страницу...');
+                            const wrapper = document.querySelector('.t-form-success-popup_wrapper');
+                            if (wrapper) wrapper.remove(); // убираем попап
+                            window.location.reload();
                         }, 5000);
                     }
                 }
@@ -152,8 +148,8 @@
         });
 
         observer.observe(body, {
-            attributes: true,
-            attributeFilter: ['class']
+            childList: true,
+            subtree: true
         });
     }
 
