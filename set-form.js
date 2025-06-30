@@ -1,4 +1,4 @@
-! function(t) {
+!function(t) {
     let e = ".custom-form",
         r = ".custom-form-submit",
         o = (t = {}) => {
@@ -46,7 +46,7 @@
                 if (!i) return console.error(`[TKFORM] Не найдено кнопки submit с классом ${r} в блоке`, t), !1;
                 let a = o.dataset.artboardRecid ? "tk-form" + o.dataset.artboardRecid : "tk-form" + Math.floor(1e5 + 9e5 * Math.random()),
                     s = document.createElement("div");
-                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/  " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
+                s.innerHTML = `<form class="t-form t-form_inputs-total_2 js-form-proccess" id="${a}" name="form778879734" action="https://forms.tildacdn.com/procces/     " method="POST" role="form" data-formactiontype="2" data-inputbox=".t-input-group" data-success-callback="t396_onSuccess" data-success-popup="y" data-error-popup="y"></form>`;
                 let u = s.childNodes[0];
                 n.forEach(t => {
                     let e = t.querySelector("form");
@@ -57,57 +57,67 @@
             })
         },
         l = (form, btn) => {
-    if (!form) return console.error("[TKFORM] Не найдено комбинированной формы"), !1;
-    if (!btn) return console.error(`[TKFORM] Не найдено кнопки submit в форме`, form), !1;
+            if (!form) return console.error("[TKFORM] Не найдено комбинированной формы"), !1;
+            if (!btn) return console.error(`[TKFORM] Не найдено кнопки submit в форме`, form), !1;
 
-    btn.setAttribute("type", "submit");
-    btn.setAttribute("tabindex", "0");
-    btn.setAttribute("onKeyDown", "tkForm.handleSubmitKeyDown(event)");
-    let r = btn.getAttribute("style");
-    btn.setAttribute("style", r + " cursor: pointer;");
-    btn.classList.add("t-submit");
+            btn.setAttribute("type", "submit");
+            btn.setAttribute("tabindex", "0");
+            btn.setAttribute("onKeyDown", "tkForm.handleSubmitKeyDown(event)");
+            let r = btn.getAttribute("style");
+            btn.setAttribute("style", r + " cursor: pointer;");
+            btn.classList.add("t-submit");
 
-    btn.addEventListener("click", function handleClick(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
+            btn.addEventListener("click", function handleClick(evt) {
+                evt.preventDefault();
+                evt.stopPropagation();
 
-        window.tildaForm.hideErrors(form);
-        let errors = window.tildaForm.validate(form);
+                window.tildaForm.hideErrors(form);
+                let errors = window.tildaForm.validate(form);
 
-        if (errors.length) {
-            window.tildaForm.showErrors(form, errors);
-            return;
-        }
+                if (errors.length) {
+                    window.tildaForm.showErrors(form, errors);
+                    return;
+                }
 
-        if (!t_forms__initBtnClick) {
-            console.error("[TKFORM] Функция t_forms__initBtnClick не инициализирована на странице");
-            return;
-        }
+                if (!t_forms__initBtnClick) {
+                    console.error("[TKFORM] Функция t_forms__initBtnClick не инициализирована на странице");
+                    return;
+                }
 
-        // Отправляем форму стандартным способом Tilda
-        t_forms__initBtnClick(evt);
+                // Отправляем форму стандартным способом Tilda
+                t_forms__initBtnClick(evt);
 
-        // Показываем success-popup и обновляем страницу через 2 секунды
-        setTimeout(() => {
-            if (typeof t396_onSuccess === 'function') {
-                t396_onSuccess(); // показываем стандартный popup "Спасибо"
-            }
-            setTimeout(() => {
-                window.location.reload(); // обновляем страницу
-            }, 15000);
-        }, 100);
-    });
+                // Подписываемся на успешное завершение
+                const formId = form.id;
 
-    btn.addEventListener("keydown", function (e) {
-        tkForm.handleSubmitKeyDown(e);
-    });
+                const formSubmitHandler = (e) => {
+                    if (e.detail.formId === formId) {
+                        document.removeEventListener('t-form-submitted-successfully', formSubmitHandler);
 
-    t_onReady(function () {
-        setTimeout(function () {
-            window.t_upwidget__init ? t_zeroForms__onFuncLoad("t_upwidget__init", () => btn.classList.remove("t-submit")) : btn.classList.remove("t-submit")
-        }, 500)
-    })
-};
+                        if (typeof t396_onSuccess === 'function') {
+                            t396_onSuccess(); // показываем popup "Спасибо"
+                        }
+
+                        setTimeout(() => {
+                            window.location.reload(); // обновляем страницу
+                        }, 2000);
+                    }
+                };
+
+                document.addEventListener('t-form-submitted-successfully', formSubmitHandler);
+            });
+
+            btn.addEventListener("keydown", function (e) {
+                tkForm.handleSubmitKeyDown(e);
+            });
+
+            t_onReady(function () {
+                setTimeout(function () {
+                    window.t_upwidget__init ? t_zeroForms__onFuncLoad("t_upwidget__init", () => btn.classList.remove("t-submit")) : btn.classList.remove("t-submit")
+                }, 500)
+            })
+        };
+
     t.tkForm = {
         init: o,
         handleSubmitKeyDown: function t(e) {
