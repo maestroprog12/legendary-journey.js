@@ -70,7 +70,12 @@
             btn.setAttribute("style", r + " cursor: pointer;");
             btn.classList.add("t-submit");
 
+            let isFormSubmitting = false;
+
             btn.addEventListener("click", function handleClick(evt) {
+                if (isFormSubmitting) return; // Защита от повторной отправки
+                isFormSubmitting = true;
+
                 evt.preventDefault();
                 evt.stopPropagation();
 
@@ -79,11 +84,13 @@
 
                 if (errors.length) {
                     window.tildaForm.showErrors(form, errors);
+                    isFormSubmitting = false; // Сброс флага при ошибке
                     return;
                 }
 
                 if (!t_forms__initBtnClick) {
                     console.error("[TKFORM] Функция t_forms__initBtnClick не инициализирована на странице");
+                    isFormSubmitting = false; // Сброс флага при ошибке
                     return;
                 }
 
@@ -107,7 +114,7 @@
 
     // === Основная функция: ждём прохождения капчи и обновляем через 5 секунд ===
     function waitForCaptchaAndReload(form) {
-        const captchaContainer = form.querySelector('.t-upwidget');
+        const captchaContainer = form.querySelector('.t-upwidget'); // Замени t-upwidget на правильный класс
 
         if (!captchaContainer) {
             console.warn('[TKFORM] Контейнер капчи не найден');
@@ -119,7 +126,7 @@
         const observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    if (captchaContainer.classList.contains('t-upwidget__success')) {
+                    if (captchaContainer.classList.contains('t-upwidget__success')) { // Замени t-upwidget__success на правильный класс
                         observer.disconnect(); // перестаём наблюдать
                         console.log('[TKFORM] Капча успешно пройдена');
 
